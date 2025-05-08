@@ -1,11 +1,6 @@
 import sys
 from commands import * # find, add, edit, delete
 
-
-
-
-
-
 class display:
 	def __init__(self):
 		print('''
@@ -29,7 +24,6 @@ class display:
 \te.g. \"find product\" and hit enter. then you'll be prompt to type what ever needed..	
 \tpress \"ctrl + C\" to exit
 		''')
-
 
 
 def get_command_and_item():
@@ -61,7 +55,8 @@ if __name__ == '__main__':
 
 		command_obj = command_objects[command]
 		command_method = command_obj.get_method(item)
-		command_method()
+		record = command_method()
+		print(len(record))
 
 		print()
 
