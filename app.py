@@ -26,7 +26,7 @@ class display:
 		''')
 
 
-def get_command_and_item():
+def get_user_command_and_item():
 	ask = input('/app> ')
 	command, item = ask.split()
 	return command.lower(), item.lower()
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 	while True:
 
-		command, item = get_command_and_item()
+		command, item = get_user_command_and_item()
 
 		if command not in valid_commands or item not in valid_items:
 			print('INVALID command or item check the dictaion ')
@@ -56,8 +56,8 @@ if __name__ == '__main__':
 		command_obj = command_objects[command]
 		command_method = command_obj.get_method(item)
 		record = command_method()
-		print(len(record))
-
+		print(record)
+		
 		print()
 
 
