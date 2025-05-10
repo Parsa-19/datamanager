@@ -107,8 +107,26 @@ index\t\torder Date\t\trequired Date\t\tshipped Date\t\tstatus
 		mycursor.execute(query)
 		return mycursor.fetchall()
 
-	def amar(self):
-		pass
+	def statistics(self): 
+		statistics_result = '\nall sells in this date:'
+		sell_date_record = '{record}'
+		mycursor = self.mydb.cursor()
+		input_date = input("\ntype the date you want to get statistics from e.g. \'2004-01-31\': ")
+		
+		query = f"SELECT * FROM payments WHERE paymentDate=\"{input_date}\"" 
+		mycursor.execute(query)
+		all_records = mycursor.fetchall()
+		for index, record in enumerate(all_records):
+			statistics_result += ('\n' + f'{index+1}\tdate= {record[2]}\tamount= {record[3]}')
+
+		statistics_result += '\n\n--------\n\nmost expensive sell: '
+		query = f"SELECT MAX(amount) FROM payments WHERE paymentDate=\"{input_date}\""
+		mycursor.execute(query)
+		highest_price = mycursor.fetchall()
+		statistics_result += str(highest_price[0][0]) + '\n'
+
+
+		return statistics_result
 
 
 

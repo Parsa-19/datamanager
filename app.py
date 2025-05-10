@@ -1,17 +1,18 @@
 import sys
 from commands import * # find, add, edit, delete
+import keyboard
 
 class display:
 	def __init__(self):
-		print('''
+		self.help = '''
 \tthere is 4 operations known as commands and 4 targets known as items:
 \t
 \t[commands]	[description]
 \t-----------------------------
-\t-find			\"finds/searches the database display selected record(s)\"
-\t-add			\"create new record of the item\"
-\t-edit			\"update on desired record\"
-\t-delete			\"delete unwanted record\"
+\t-find\t\t\"finds/searches the database and display selected record(s). you can use item \'statistics\' with find to search more advanced!\"
+\t-add\t\t\"create new record of the item\"
+\t-edit\t\t\"update on desired record\"
+\t-delete\t\t\"delete unwanted record\"
 \t
 \t[items]
 \t-----------------------------
@@ -21,9 +22,10 @@ class display:
 \t-product
 \t
 \tyou can use the combination of \"command item\" to reach what you are looking for!
-\te.g. \"find product\" and hit enter. then you'll be prompt to type what ever needed..	
+\tfor example type \"find product\" and hit enter. then you'll be prompt to what ever needed then..	
+\tnotice that there is one extra item just for find command like \"find statistics\" for search more advance on data.
 \tpress \"ctrl + C\" to exit
-		''')
+		'''
 
 
 def get_user_command_and_item():
@@ -44,20 +46,29 @@ if __name__ == '__main__':
 	}
 
 	screen = display()
+	print(screen.help)
 
 	while True:
 
 		command, item = get_user_command_and_item()
+		if not(command and item): # enter key pressed
+			continue
+
+		if command == 'find' and item == 'statistics':
+			statistics_executor = Find()
+			records = statistics_executor.statistics()
+			print(records)
+			continue
 
 		if command not in valid_commands or item not in valid_items:
-			print('INVALID command or item check the dictaion ')
+			print('INVALID command or item! check the word dictation ')
 			continue
 
 		command_obj = command_objects[command]
 		command_method = command_obj.get_method(item)
-		record = command_method()
-		print(record)
-		
+		records = command_method()
+		print(records)
+
 		print()
 
 
