@@ -125,6 +125,7 @@ index\t\torder Date\t\trequired Date\t\tshipped Date\t\tstatus
 		highest_price = mycursor.fetchall()
 		statistics_result += str(highest_price[0][0]) + '\n'
 
+		"most popular product bought this day: {}"
 
 		return statistics_result
 
@@ -140,13 +141,77 @@ class Add(itemFinder): # CREATE
 		return self.item_methods[item]
 
 	def customer(self): # input(all_columns) output(True/False)
-		pass
+		print('fill each info by typing anything you like:')
+		customer_name = input('full name: ')
+		contactLast_name = input('contact last name: ')
+		contactFirst_name = input('contact first name : ')
+		phone = input('phone number : ')
+		address_line1 = input('address : ')
+		city = input('city : ')
+		country = input('country : ')
+		
+		query = f'''INSERT INTO customers (customerName, contactLastName, contactFirstName, phone, addressLine1, city, country)
+VALUES (\"{customer_name}\", \"{contactLast_name}\", \"{contactFirst_name}\", \"{phone}\", \"{address_line1}\", \"{city}\", \"{country}\")'''
+		mycursor = self.mydb.cursor()
+		mycursor.execute(query)
+		self.mydb.commit()
+		print(mycursor.rowcount, "Record inserted successfully into customers table")
+		return True
+
 	def employee(self): # input(all_columns) output(True/False)
-		pass
+		print('fill each info by typing anything you like:')
+		last_name = input('last name: ')
+		first_name = input('first name: ')
+		extension = 'x102'
+		email = input('email: ')
+		office_code = input('office code (1-7): ')
+		job_title = input('job title: ')
+		
+		query = f'''INSERT INTO employees (lastName, firstName, extension, email, officeCode, jobTitle)
+VALUES (\"{last_name}\", \"{first_name}\", \"{extension}\", \"{email}\", \"{office_code}\", \"{job_title}\")'''
+		mycursor = self.mydb.cursor()
+		mycursor.execute(query)
+		self.mydb.commit()
+		print(mycursor.rowcount, "Record inserted successfully into employees table")
+		return True
+
 	def order(self): # input(all_columns) output(True/False)
 		pass
+
 	def product(self): # input(all_columns) output(True/False)
-		pass
+		mycursor = self.mydb.cursor()
+		choose_productline = {
+			1: 'Classic Cars',
+			2: 'Motorcycles',
+			3: 'Planes',
+			4: 'Ships',
+			5: 'Trains',
+			6: 'Trucks and Buses',
+			7: 'Vintage Cars'
+		}
+		print('fill each info by typing anything you like:')
+		
+		# product_code = input("product code: ")
+		product_name = input('product name: ')
+
+		for key, value in choose_productline.items():
+			print(f'{key}- {value}')
+		product_line_num = int(input('choose relating product line number (1-7): '))
+		product_line = choose_productline[product_line_num]
+		
+		product_scale = input('product scale (example 1:18) : ')
+		product_vendor = input('product vendor (example Motor City Art Classics) : ')
+		product_description = input('product description: ')
+		quantity_in_stock = input('quantity in stock: ')
+		buyPrice = input('buy price: ')
+		MSRP = '0'
+		
+		query = f'''INSERT INTO products (productName, productLine, productScale, productVendor, productDescription, quantityInStock, buyPrice, MSRP)
+VALUES (\"{product_name}\", \"{product_line}\", \"{product_scale}\", \"{product_vendor}\", \"{product_description}\", \"{quantity_in_stock}\", \"{buyPrice}\", \"{MSRP}\")'''
+		mycursor.execute(query)
+		self.mydb.commit()
+		print(mycursor.rowcount, "Record inserted successfully into employees table")
+		return True		
 
 
 
@@ -194,3 +259,4 @@ class Delete(itemFinder): # DELETE
 
 
 
+Add()
