@@ -11,3 +11,6 @@ def connect_sql():
 		database="classicmodels"
 	)
 	return mydb
+
+def close(mydb):
+	mydb.close()

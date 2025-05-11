@@ -1,6 +1,9 @@
 from tabulate import tabulate
 import itemTools
 import customizedSQLConnector as classicDB
+import datetime
+from datetime import timedelta, date
+from mysql.connector import IntegrityError
 
 class Add(itemTools.itemFinder): # CREATE 
 
@@ -56,6 +59,10 @@ VALUES (\"{last_name}\", \"{first_name}\", \"{extension}\", \"{email}\", \"{offi
 		print('[1] \nfirst tell us whos ordering? \nlog in to account: \n------------------')
 		customer_name = input("full name e.g. \"Suominen Souveniers\": ")
 		phone = input("phone e.g. \"+358 9 8045 555\": ")
+		query = f"SELECT * FROM customers WHERE customerName=\"{customer_name}\" AND phone=\"{phone}\""
+		mycursor.execute(query)
+		customer_record = mycursor.fetchone()
+		customer_number = customer_record[0]
 		
 		print('\n[2] \nEnter the name of product you want to order and type \"done\" whenever you ready!')
 		basket = []
@@ -70,19 +77,57 @@ VALUES (\"{last_name}\", \"{first_name}\", \"{extension}\", \"{email}\", \"{offi
 				product_record = list(product_record)
 				product_description = product_record.pop(5)
 				basket.append(product_record)
-		print(f'\navailable products IN YOUR BASKET:')
-		# print(basket)
+		
+		# [3]
+		order_number = None
+		order_date = datetime.datetime.now()
+		required_date = order_date + timedelta(days=5)
+		try:
+			query = f'''INSERT INTO orders (orderDate, requiredDate, status, customerNumber)
+	VALUES (\"{order_date}\", \"{required_date}\", \"Shipped\", \"{customer_number}\")'''
+			mycursor.execute(query)
+			self.mydb.commit()
+			print(f'\n==> {mycursor.rowcount} order record submitted')
+			order_number = mycursor.lastrowid
+
+		except IntegrityError as e:
+			print(f'''\n*******************
+<< order failed >>
+probably the custumer number doesnt exists in customer table. CHECK THE YOUR ACCOUNT INFO OR RECREATE IT:
+THE ERROR:
+{e}
+''')
+			return None
+
+		# [4]
+		for product in basket:
+			product_code = product[0]
+			quantity_ordered = '1' 
+			price_each = product[-2]
+			orderLine_number = '1'
+			try:
+				query = f'''INSERT INTO orderdetails (orderNumber, productCode, quantityOrdered, priceEach, orderLineNumber)
+VALUES (\"{order_number}\", \"{product_code}\", \"{quantity_ordered}\", \"{price_each}\", \"{orderLine_number}\")'''
+				mycursor.execute(query)
+				self.mydb.commit()
+				print(f'--> {mycursor.rowcount} product record added to orderDetails')
+			except IntegrityError as e:
+				print(f'''****************
+<< order failed >>
+you probably entered product {product[1]} more than one time. try again. error:
+{e}
+''')
+				return None
+
+		print(f'\nREPORT YOUR ORDER YOUR BASKET:')
 		print( tabulate(basket, headers=[
 			'productCode', 'productName', 'productLine', 'productScale', 'productVendor', 'quantityInStock', 'buyPrice', 'MSRP']
 			))
-
-		return True
-
-
-
-
-
-
+		print(f'''
+order is submitted on = {order_date}
+you'll get the order on = {required_date}
+			''')
+		return 'FINISH addin order!'
 
 
 	def product(self): # input(all_columns) output(True/False)
