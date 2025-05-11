@@ -191,7 +191,7 @@ VALUES (\"{last_name}\", \"{first_name}\", \"{extension}\", \"{email}\", \"{offi
 		}
 		print('fill each info by typing anything you like:')
 		
-		# product_code = input("product code: ")
+		product_code = input("a unique product code like S99-010101: ")
 		product_name = input('product name: ')
 
 		for key, value in choose_productline.items():
@@ -206,13 +206,15 @@ VALUES (\"{last_name}\", \"{first_name}\", \"{extension}\", \"{email}\", \"{offi
 		buyPrice = input('buy price: ')
 		MSRP = '0'
 		
-		query = f'''INSERT INTO products (productName, productLine, productScale, productVendor, productDescription, quantityInStock, buyPrice, MSRP)
-VALUES (\"{product_name}\", \"{product_line}\", \"{product_scale}\", \"{product_vendor}\", \"{product_description}\", \"{quantity_in_stock}\", \"{buyPrice}\", \"{MSRP}\")'''
-		mycursor.execute(query)
-		self.mydb.commit()
-		print(mycursor.rowcount, "Record inserted successfully into employees table")
-		return True		
-
+		try:
+			query = f'''INSERT INTO products (productCode, productName, productLine, productScale, productVendor, productDescription, quantityInStock, buyPrice, MSRP)
+VALUES (\"{product_code}\", \"{product_name}\", \"{product_line}\", \"{product_scale}\", \"{product_vendor}\", \"{product_description}\", \"{quantity_in_stock}\", \"{buyPrice}\", \"{MSRP}\")'''
+			mycursor.execute(query)
+			self.mydb.commit()
+			print(mycursor.rowcount, "Record inserted successfully into employees table")
+			return True
+		except Exception as e:
+			print(f"\n*******************\ncouldnt add this product due to:\n{e}\ntry again..")
 
 
 class Edit(itemFinder): # UPDATE
