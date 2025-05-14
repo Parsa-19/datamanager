@@ -1,9 +1,6 @@
+sth = input('enter sth:')
 
-import datetime
-from datetime import timedelta, date
-
-now = datetime.datetime.now()
-print(now)
-
-end_date = now + timedelta(days=10)
-print(end_date)
+if len(sth) == 0 or sth.isspace():
+	print('empty or space')
+else:
+	print('FALSE')

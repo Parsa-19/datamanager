@@ -50,9 +50,8 @@ if __name__ == '__main__':
 	screen = display()
 	print(screen.help)
 
-	try:
-		while True:
-
+	while True:
+		try:
 			command, item = get_user_command_and_item()
 
 			if command == 'find' and item == 'statistics': # special item for command
@@ -72,9 +71,12 @@ if __name__ == '__main__':
 
 			print()
 
-	except KeyboardInterrupt:
-		print("\n\nCtrl-C pressed!")
-		sys.exit(0)
+		except KeyboardInterrupt:
+			print("\n\nCtrl-C pressed!")
+			sys.exit(0)
+
+		except ValueError:
+			continue
 
 
 

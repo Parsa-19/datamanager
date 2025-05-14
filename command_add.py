@@ -119,7 +119,7 @@ you probably entered product {product[1]} more than one time. try again. error:
 ''')
 				return None
 
-		print(f'\nREPORT YOUR ORDER YOUR BASKET:')
+		print(f'\n(REPORT THE ORDER)\nINSIDE YOUR BASKET:')
 		print( tabulate(basket, headers=[
 			'productCode', 'productName', 'productLine', 'productScale', 'productVendor', 'quantityInStock', 'buyPrice', 'MSRP']
 			))
