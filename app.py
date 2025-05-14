@@ -28,18 +28,15 @@ class display:
 	press \"Ctrl + C\" to exit
 		'''
 
-
 def get_user_command_and_item():
 	ask = input('/classicmodelsDB> ')
 	command, item = ask.split()
 	return command.lower(), item.lower()
 
-
 if __name__ == '__main__':
 
 	valid_commands = ['find', 'add', 'edit', 'delete']
 	valid_items = ['customer', 'employee', 'order', 'product']
-
 	command_objects = {
 		'find': command_find.Find(),
 		'add': command_add.Add(),

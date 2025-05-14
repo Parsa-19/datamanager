@@ -101,17 +101,18 @@ class Edit(itemTools.itemFinder): # UPDATE
 		query = f'SELECT * FROM orders WHERE customerNumber=\"{customer_number}\"'
 		mycursor.execute(query)
 		customer_order_records = mycursor.fetchall()
-		print(f'\n<< choose the order you want to edit for customer {customer_name} by orderNumber >>')
+		print()
 		print( tabulate(customer_order_records, headers=[
 			'orderNumber', 'orderDate', 'requiredDate', 'shippedDate', 'status', '', 'customerNumber']) )
-		order_number = input('\n --> orderNumber: ') 
+		print(f'\n # choose the order you want to edit for customer \"{customer_name}\" by orderNumber :')
+		chosen_order_number = input('\n --> orderNumber: ') 
 
 		# get order's products 
-		query = f'SELECT * FROM orderdetails WHERE orderNumber=\"{order_number}\"'
+		query = f'SELECT * FROM orderdetails WHERE orderNumber=\"{chosen_order_number}\"'
 		mycursor.execute(query)
 		orderdetails_records = mycursor.fetchall()
 		# replace all productCodes with their names
-		current_order_productCodes ={}
+		current_order_productCodes = {} # "product_name": "product_Code "
 		for i, product in enumerate(orderdetails_records):
 			product = list(product)
 			product_code = product[1]
@@ -119,32 +120,96 @@ class Edit(itemTools.itemFinder): # UPDATE
 			mycursor.execute(query)
 			product_record = mycursor.fetchone()
 			product_name = product_record[1]
-			product[1] = product_name
-			orderdetails_records[i] = product
+			product[1] = product_name # replace product_name in each orderdetails record 
+			orderdetails_records[i] = product # gather recoreds in one "orderdetails_records"
 			current_order_productCodes[product_name] = product_code 
 		print()
+		print('[inside this order] :')
 		print( tabulate(orderdetails_records, headers=[
 			'orderNumber', 'productName', 'quantityOrdered', 'priceEach', 'orderLineNumber' ]) )
 
-		# choose any of them(products) to edit
-		print('\n<< enter new product to replace ro type delete in each product to remove it: >>')
-		for product_in_order in orderdetails_records:
-			new_product_name = input(f"\t ** change {product_in_order[1]} to: ")
-			query = f'SELECT * FROM products WHERE productName=\"{new_product_name}\"'
+		# choose any of them(products) to edit and replace new product code in orderdetails 
+		print('\n # enter new product to replace, \n # type delete for each product to remove \n # and leave blank to keep that product :')
+		try:
+			for product_in_order in orderdetails_records:
+				new_product_name = input(f"\t ** change \"{product_in_order[1]}\" to: ")
+				current_product_code = current_order_productCodes[product_in_order[1]]
+
+				if new_product_name.lower() == 'delete':
+					query = f'DELETE FROM orderdetails WHERE productCode=\"{current_product_code}\" AND orderNumber=\"{chosen_order_number}\"'
+					mycursor.execute(query)
+					self.mydb.commit()
+					print(f'\t ** {mycursor.rowcount} row deleted')
+					continue
+
+				elif len(new_product_name) == 0 or new_product_name.isspace():
+					print("\t ** keeping it..")
+					continue
+								
+				query = f'SELECT * FROM products WHERE productName=\"{new_product_name}\"'
+				mycursor.execute(query)
+				product_record = mycursor.fetchone()
+				new_product_code = product_record[0]
+				query = f'''UPDATE orderdetails
+	SET productCode=\"{new_product_code}\"
+	WHERE productCode=\"{current_product_code}\" AND orderNumber=\"{chosen_order_number}\"'''
+				mycursor.execute(query)
+				self.mydb.commit()
+				print("\t ** changed!" if mycursor.rowcount >= 1 else "\t ** didnt change (failed)")
+		
+		except Exception as e:
+			print(f"\n$$$$$$$$$$$$$$$$$\nediting each product FAILED due to :\n{e}")
+		
+		# ask to add any product to chosen order
+		add_product_answer = input("\nyou wanna add any product to this order (y/n): ")
+		add_product_answer = True if add_product_answer.lower() == 'y' else False
+		if add_product_answer:
+			print("enter new product name to add or type \"done\" to finish")
+		while add_product_answer:
+			
+			adding_name = input('\t ** new product_name: ')
+			if adding_name.lower() == 'done':
+				break
+			
+			query = f'SELECT * FROM products WHERE productName=\"{adding_name}\"'
+			mycursor.execute(query)
+			adding_record = mycursor.fetchone()
+			
+			adding_code = adding_record[0]
+			quantity_ordered = '1'
+			price_each = adding_record[-2]
+			orderLine_number = '1'
+
+			try:
+				query = f'''INSERT INTO orderdetails (orderNumber, productCode, quantityOrdered, priceEach, orderLineNumber)
+VALUES (\"{chosen_order_number}\", \"{adding_code}\", \"{quantity_ordered}\", \"{price_each}\", \"{orderLine_number}\")'''
+				mycursor.execute(query)
+				self.mydb.commit()
+				print(f'\t ** {mycursor.rowcount} product record added to orderDetails..')
+			except IntegrityError as e:
+				print(f'''****************
+<< order failed >>
+you probably entered product {product[1]} more than one time. try again. error:
+{e}
+''')
+
+		# display final order:
+		query = f'SELECT * FROM orderdetails WHERE orderNumber=\"{chosen_order_number}\"'
+		mycursor.execute(query)
+		final_orderdetails_records = mycursor.fetchall()
+		for i, product in enumerate(final_orderdetails_records):
+			product = list(product)
+			product_code = product[1]
+			query = f'SELECT * FROM products WHERE productCode=\"{product_code}\"'
 			mycursor.execute(query)
 			product_record = mycursor.fetchone()
-			new_product_code = product_record[0]
-
-
-			query = f'''UPDATE orderdetails
-SET productCode=\"{new_product_code}\"
-WHERE productCode=\"{current_order_productCodes[product_in_order[1]]}\"'''
-			mycursor.execute(query)
-			self.mydb.commit()
-			print("\t ** changed!" if mycursor.rowcount >= 1 else "\t ** didnt change (failed)")
-
-					
-
+			product_name = product_record[1]
+			product[1] = product_name # replace product_name in each orderdetails record 
+			final_orderdetails_records[i] = product # gather recoreds in one "final_orderdetails_records"
+			
+		print("\n[EDITED ORDER] :")
+		print( tabulate(final_orderdetails_records, headers=[
+			'orderNumber', 'productName', 'quantityOrdered', 'priceEach', 'orderLineNumber' ]) )
 
 
 
